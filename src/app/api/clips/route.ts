@@ -5,7 +5,6 @@ export async function GET(request: NextRequest) {
   const jobId = request.nextUrl.searchParams.get('jobId')
 
   if (!jobId) {
-    // Return all jobs if no jobId provided
     const jobs = jobStore.all().map((job) => ({
       id: job.id,
       status: job.status,
