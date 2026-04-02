@@ -5,7 +5,32 @@ export async function GET(request: NextRequest) {
   const jobId = request.nextUrl.searchParams.get('jobId')
 
   if (!jobId) {
-    return NextResponse.json({ error: 'Missing jobId' }, { status: 400 })
+    // Return all jobs if no jobId provided
+    const jobs = jobStore.all().map((job) => ({
+      id: job.id,
+      status: job.status,
+      progress: job.progress,
+      message: job.message,
+      originalFileName: job.originalFileName,
+      settings: job.settings,
+      clips: job.clips.map((c) => ({
+        id: c.id,
+        highlightIndex: c.highlightIndex,
+        startTime: c.startTime,
+        endTime: c.endTime,
+        duration: c.duration,
+        reason: c.reason,
+        transcript: c.transcript,
+        status: c.status,
+        downloadUrl: c.downloadUrl,
+        captionStyle: c.captionStyle,
+        createdAt: c.createdAt,
+        errorMessage: c.errorMessage,
+      })),
+      createdAt: job.createdAt,
+      errorMessage: job.errorMessage,
+    }))
+    return NextResponse.json({ jobs })
   }
 
   const job = jobStore.get(jobId)
@@ -14,7 +39,6 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: 'Job not found' }, { status: 404 })
   }
 
-  // Return a clean version (strip internal file paths from the response)
   return NextResponse.json({
     id: job.id,
     status: job.status,
@@ -39,10 +63,4 @@ export async function GET(request: NextRequest) {
     createdAt: job.createdAt,
     errorMessage: job.errorMessage,
   })
-}
-
-// Get all jobs
-export async function GET_ALL() {
-  const jobs = jobStore.all()
-  return NextResponse.json({ jobs })
 }
